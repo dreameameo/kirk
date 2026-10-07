@@ -1,4 +1,4 @@
-# kerk
+# Kirk
 
 Small self-hosted watcher for software releases. It polls GitHub, GitLab or any web page on a schedule, remembers the version it last saw, and pings you when it changes. One process, no runtime dependencies, state in a JSON file, dashboard bundled in.
 
