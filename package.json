@@ -1,0 +1,14 @@
+{
+  "name": "kerk",
+  "version": "0.1.0",
+  "description": "Watches software release pages and tells you when something new ships.",
+  "license": "MIT",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "bin": { "kerk": "src/kerk.js" },
+  "scripts": {
+    "start": "node src/kerk.js",
+    "test": "node test/smoke.js",
+    "build:binary": "sh scripts/build-binary.sh"
+  }
+}

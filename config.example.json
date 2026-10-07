@@ -1,0 +1,22 @@
+{
+  "listen": "0.0.0.0:8080",
+  "dataDir": "./data",
+  "interval": "1h",
+  "auth": { "enabled": true, "username": "admin", "password": "change-me" },
+  "github": { "token": "" },
+  "notifiers": {
+    "phone":   { "type": "gotify",  "url": "https://gotify.example.com", "token": "AbCdEf123", "priority": 5 },
+    "team":    { "type": "slack",   "url": "https://hooks.slack.com/services/T000/B000/XXXX" },
+    "chat":    { "type": "discord", "url": "https://discord.com/api/webhooks/000/XXXX" },
+    "topic":   { "type": "ntfy",    "url": "https://ntfy.sh/my-kerk-topic" },
+    "tg":      { "type": "telegram","token": "123456:ABC", "chat_id": "123456789" },
+    "ci":      { "type": "webhook", "url": "https://example.com/hooks/release", "secret": "shared-secret",
+                 "body": { "text": "{{project}} {{version}} is out (was {{previous}}) {{url}}" } }
+  },
+  "projects": [
+    { "id": "gotify", "name": "Gotify server", "type": "github", "repo": "gotify/server", "notify": ["phone", "team"] },
+    { "id": "caddy",  "name": "Caddy", "type": "github", "repo": "caddyserver/caddy", "interval": "6h" },
+    { "id": "gitea",  "name": "Example on GitLab", "type": "gitlab", "repo": "group/project" },
+    { "id": "site",   "name": "Some download page", "type": "url", "url": "https://example.com/downloads", "regex": "Latest: v([\\d.]+)" }
+  ]
+}

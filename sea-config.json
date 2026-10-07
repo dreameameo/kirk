@@ -1,0 +1,6 @@
+{
+  "main": "src/kerk.js",
+  "output": "dist/sea-prep.blob",
+  "disableExperimentalSEAWarning": true,
+  "assets": { "index.html": "public/index.html" }
+}

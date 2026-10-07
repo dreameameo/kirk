@@ -1,0 +1,10 @@
+services:
+  kerk:
+    build: .
+    restart: unless-stopped
+    ports: ["8080:8080"]
+    volumes: ["./data:/data"]        # config.json, state.json live here
+    environment:
+      # KERK_PASSWORD: change-me     # secrets can come from the environment instead of the file
+      # KERK_GITHUB_TOKEN: ghp_xxx
+      TZ: UTC

@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kerk</title>
+<style>
+:root{--bg:#e9edf0;--panel:#f6f8f9;--ink:#18222d;--mute:#5d6a78;--line:#cdd5dc;--accent:#2a4bd6;--accent-ink:#fff;--new:#e7a30f;--bad:#b3261e;--ok:#1f7a4d}
+@media (prefers-color-scheme:dark){:root{--bg:#141a21;--panel:#1b232c;--ink:#e6ebf0;--mute:#93a0ae;--line:#2c3642;--accent:#7b93ff;--accent-ink:#0d1220;--new:#f0b429;--bad:#ff8a80;--ok:#6fd3a0}}
+*{box-sizing:border-box}
+html{background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;padding:max(24px,env(safe-area-inset-top)) 20px 64px}
+main{max-width:860px;margin:0 auto}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:2px solid var(--ink)}
+h1{margin:0;font:700 2.2rem/1 Georgia,"Iowan Old Style",serif;letter-spacing:-.02em}
+header p{margin:0;color:var(--mute)}
+section{margin-top:36px}
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+h2{margin:0;font-size:1.05rem;font-weight:650}
+button,select,input{font:inherit;color:inherit}
+button{border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--mute)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.quiet{border-color:transparent;background:none;color:var(--mute);padding:6px 8px}
+button.quiet:hover{color:var(--ink)}
+button:disabled{opacity:.5;cursor:wait}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:4px 20px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.name{font-weight:600}
+.name a{color:inherit;text-decoration:none;border-bottom:1px solid var(--line)}
+.name a:hover{border-color:var(--ink)}
+.src{color:var(--mute);font-size:.86rem;overflow-wrap:anywhere}
+.ver{font:600 1.55rem/1.1 Georgia,"Iowan Old Style",serif;text-align:right;font-variant-numeric:lining-nums}
+.ver small{display:block;font:400 .8rem/1.4 system-ui,sans-serif;color:var(--mute)}
+.ver.fresh{box-shadow:inset 4px 0 0 var(--new);padding-left:10px}
+.was{text-decoration:line-through}
+.err{color:var(--bad);font-size:.86rem;grid-column:1/-1}
+.acts{display:flex;gap:2px}
+.empty{padding:22px 0;color:var(--mute)}
+.pill{font-size:.8rem;color:var(--mute)}
+.tag{display:inline-block;font-size:.78rem;border:1px solid var(--line);border-radius:4px;padding:0 6px;margin-right:6px;color:var(--mute)}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);padding:22px;width:min(460px,92vw)}
+dialog::backdrop{background:rgba(10,14,20,.5)}
+dialog h3{margin:0 0 14px}
+label{display:block;margin:10px 0 3px;font-size:.88rem;color:var(--mute)}
+input[type=text],input[type=password],select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.chk{display:flex;gap:8px;align-items:center;margin:6px 0;color:var(--ink)}
+.chk input{width:auto}
+.foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;align-items:center}
+.msg{margin-right:auto;font-size:.88rem}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+@media (max-width:560px){.row{grid-template-columns:1fr auto}.acts{grid-column:1/-1}.ver{font-size:1.3rem}}
+</style>
+</head>
+<body>
+<main>
+  <header><h1>kerk</h1><p id="summary"></p></header>
+
+  <section>
+    <div class="sh"><h2>Projects</h2><button class="primary" id="addProject">Add project</button></div>
+    <div id="projects"></div>
+  </section>
+
+  <section>
+    <div class="sh"><h2>Notifiers</h2><button id="addNotifier">Add notifier</button></div>
+    <div id="notifiers"></div>
+  </section>
+</main>
+
+<dialog id="pd"><form method="dialog" id="pf">
+  <h3>Add project</h3>
+  <label for="p-name">Name</label><input type="text" id="p-name" required placeholder="Gotify server">
+  <label for="p-type">Source</label>
+  <select id="p-type"><option value="github">GitHub releases</option><option value="gitlab">GitLab releases</option><option value="url">Web page + regex</option></select>
+  <div id="p-repo-wrap"><label for="p-repo">Repository</label><input type="text" id="p-repo" placeholder="gotify/server"></div>
+  <div id="p-url-wrap" hidden>
+    <label for="p-url">Page URL</label><input type="text" id="p-url" placeholder="https://example.com/downloads">
+    <label for="p-regex">Regex (first group is the version)</label><input type="text" id="p-regex" placeholder="Latest: v([\d.]+)">
+  </div>
+  <label for="p-int">Check every (blank = default)</label><input type="text" id="p-int" placeholder="6h">
+  <div class="chk" id="p-pre-wrap"><input type="checkbox" id="p-pre"><span>Include pre-releases</span></div>
+  <label>Notify</label><div id="p-notify"></div>
+  <div class="foot"><span class="msg" id="p-msg"></span><button type="button" id="p-cancel">Cancel</button><button class="primary" id="p-save">Add and check</button></div>
+</form></dialog>
+
+<dialog id="nd"><form method="dialog" id="nf">
+  <h3>Add notifier</h3>
+  <label for="n-name">Name</label><input type="text" id="n-name" required placeholder="phone">
+  <label for="n-type">Service</label>
+  <select id="n-type"><option>gotify</option><option>slack</option><option>discord</option><option>ntfy</option><option>telegram</option><option>webhook</option></select>
+  <div data-f="url"><label for="n-url" id="n-url-l">URL</label><input type="text" id="n-url"></div>
+  <div data-f="token"><label for="n-token" id="n-token-l">Token</label><input type="password" id="n-token" autocomplete="off"></div>
+  <div data-f="chat_id"><label for="n-chat">Chat ID</label><input type="text" id="n-chat"></div>
+  <div data-f="secret"><label for="n-secret">Signing secret (optional, adds X-Kerk-Signature)</label><input type="password" id="n-secret" autocomplete="off"></div>
+  <div class="foot"><span class="msg" id="n-msg"></span><button type="button" id="n-cancel">Cancel</button><button type="button" id="n-test">Send test</button><button class="primary" id="n-save">Save</button></div>
+</form></dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (t, props = {}, ...kids) => { const e = Object.assign(document.createElement(t), props); e.append(...kids.filter(k => k != null)); return e; };
+async function api(method, path, body) {
+  const r = await fetch('/api/v1' + path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body && JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || j.name || `HTTP ${r.status}`);
+  return j;
+}
+const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+function ago(ts) {
+  if (!ts) return 'never';
+  const s = Math.round((ts - Date.now()) / 1000), a = Math.abs(s);
+  if (a < 60) return 'just now';
+  if (a < 3600) return rtf.format(Math.round(s / 60), 'minute');
+  if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour');
+  return rtf.format(Math.round(s / 86400), 'day');
+}
+let notifiers = [];
+
+async function load() {
+  const [ps, ns] = await Promise.all([api('GET', '/projects'), api('GET', '/notifiers')]);
+  notifiers = ns;
+  const box = $('#projects'); box.replaceChildren();
+  if (!ps.length) box.append(el('div', { className: 'empty' }, 'Nothing watched yet. Add a project to start tracking its releases.'));
+  for (const p of ps) {
+    const st = p.state, fresh = st.changedAt && Date.now() - st.changedAt < 7 * 864e5;
+    const src = p.type === 'url' ? p.url : `${p.type === 'gitlab' ? (p.host || 'gitlab.com').replace(/^https?:\/\//, '') : 'github.com'}/${p.repo}`;
+    const title = st.url ? el('a', { href: st.url, target: '_blank', rel: 'noopener' }, p.name) : p.name;
+    const ver = el('div', { className: 'ver' + (fresh ? ' fresh' : '') }, st.version || 'pending');
+    if (fresh) ver.append(el('small', {}, 'was ', el('span', { className: 'was' }, st.previous), ', ' + ago(st.changedAt)));
+    else ver.append(el('small', {}, 'checked ' + ago(st.checkedAt)));
+    const check = el('button', { className: 'quiet', onclick: async e => { e.target.disabled = true; try { await api('POST', `/projects/${p.id}/check`); } catch {} load(); } }, 'Check now');
+    const del = el('button', { className: 'quiet', onclick: async () => { if (confirm(`Stop watching ${p.name}?`)) { await api('DELETE', `/projects/${p.id}`); load(); } } }, 'Remove');
+    const row = el('div', { className: 'row' }, el('div', {}, el('div', { className: 'name' }, title), el('div', { className: 'src' }, src + (p.interval ? ` · every ${p.interval}` : ''))), ver, el('div', { className: 'acts' }, check, del));
+    if (st.error) row.append(el('div', { className: 'err' }, 'Last check failed: ' + st.error));
+    box.append(row);
+  }
+  const nb = $('#notifiers'); nb.replaceChildren();
+  if (!ns.length) nb.append(el('div', { className: 'empty' }, 'No notifiers. Releases will show here but nothing will ping you.'));
+  for (const n of ns) {
+    const status = el('span', { className: 'pill' });
+    const test = el('button', { className: 'quiet', onclick: async e => {
+      e.target.disabled = true; status.textContent = 'sending…';
+      try { await api('POST', `/notifiers/${n.name}/test`); status.textContent = 'delivered'; status.style.color = 'var(--ok)'; }
+      catch (err) { status.textContent = err.message; status.style.color = 'var(--bad)'; }
+      e.target.disabled = false;
+    } }, 'Send test');
+    const del = el('button', { className: 'quiet', onclick: async () => { if (confirm(`Remove ${n.name}?`)) { await api('DELETE', `/notifiers/${n.name}`); load(); } } }, 'Remove');
+    nb.append(el('div', { className: 'row', style: 'grid-template-columns:1fr auto' },
+      el('div', {}, el('div', { className: 'name' }, el('span', { className: 'tag' }, n.type), n.name), el('div', { className: 'src' }, n.url || n.chat_id || ''), status),
+      el('div', { className: 'acts' }, test, del)));
+  }
+  $('#summary').textContent = `${ps.length} watched, ${ns.length} notifier${ns.length === 1 ? '' : 's'}`;
+}
+
+// project dialog
+const pt = () => $('#p-type').value;
+function syncProject() {
+  $('#p-url-wrap').hidden = pt() !== 'url'; $('#p-repo-wrap').hidden = pt() === 'url'; $('#p-pre-wrap').hidden = pt() !== 'github';
+  $('#p-repo').placeholder = pt() === 'gitlab' ? 'group/project' : 'gotify/server';
+}
+$('#p-type').onchange = syncProject;
+$('#addProject').onclick = () => {
+  $('#pf').reset(); $('#p-msg').textContent = ''; syncProject();
+  const nb = $('#p-notify'); nb.replaceChildren();
+  if (!notifiers.length) nb.append(el('div', { className: 'src' }, 'No notifiers yet.'));
+  for (const n of notifiers) nb.append(el('label', { className: 'chk' }, el('input', { type: 'checkbox', value: n.name, checked: true }), n.name));
+  $('#pd').showModal();
+};
+$('#p-cancel').onclick = () => $('#pd').close();
+$('#pf').onsubmit = async e => {
+  e.preventDefault();
+  const body = { name: $('#p-name').value, type: pt(), interval: $('#p-int').value.trim() || undefined, notify: [...$('#p-notify').querySelectorAll('input:checked')].map(i => i.value) };
+  if (pt() === 'url') { body.url = $('#p-url').value.trim(); body.regex = $('#p-regex').value; } else body.repo = $('#p-repo').value.trim();
+  if (pt() === 'github') body.prereleases = $('#p-pre').checked;
+  $('#p-save').disabled = true; $('#p-msg').className = 'msg'; $('#p-msg').textContent = 'checking…';
+  try { await api('POST', '/projects', body); $('#pd').close(); load(); }
+  catch (err) { $('#p-msg').className = 'msg bad'; $('#p-msg').textContent = err.message; }
+  $('#p-save').disabled = false;
+};
+
+// notifier dialog
+const fields = { gotify: ['url', 'token'], slack: ['url'], discord: ['url'], ntfy: ['url', 'token'], telegram: ['token', 'chat_id'], webhook: ['url', 'secret'] };
+const labels = { gotify: ['Server URL', 'App token'], slack: ['Incoming webhook URL'], discord: ['Webhook URL'], ntfy: ['Topic URL (https://ntfy.sh/mytopic)', 'Access token (optional)'], telegram: ['', 'Bot token'], webhook: ['Webhook URL'] };
+function syncNotifier() {
+  const t = $('#n-type').value;
+  document.querySelectorAll('[data-f]').forEach(d => d.hidden = !fields[t].includes(d.dataset.f));
+  $('#n-url-l').textContent = labels[t][0] || 'URL'; $('#n-token-l').textContent = (t === 'telegram' ? labels[t][1] : labels[t][1]) || 'Token';
+}
+$('#n-type').onchange = syncNotifier;
+$('#addNotifier').onclick = () => { $('#nf').reset(); $('#n-msg').textContent = ''; syncNotifier(); $('#nd').showModal(); };
+$('#n-cancel').onclick = () => $('#nd').close();
+const nbody = () => ({ name: $('#n-name').value.trim(), type: $('#n-type').value, url: $('#n-url').value.trim(), token: $('#n-token').value, chat_id: $('#n-chat').value.trim(), secret: $('#n-secret').value });
+const fieldsFor = b => Object.fromEntries(Object.entries(b).filter(([k]) => k === 'name' || k === 'type' || fields[b.type].includes(k)));
+$('#n-test').onclick = async () => {
+  const m = $('#n-msg'); m.className = 'msg'; m.textContent = 'sending…';
+  try { await api('POST', '/notifiers/test', fieldsFor(nbody())); m.className = 'msg ok'; m.textContent = 'test delivered'; }
+  catch (err) { m.className = 'msg bad'; m.textContent = err.message; }
+};
+$('#nf').onsubmit = async e => {
+  e.preventDefault();
+  try { await api('POST', '/notifiers', fieldsFor(nbody())); $('#nd').close(); load(); }
+  catch (err) { $('#n-msg').className = 'msg bad'; $('#n-msg').textContent = err.message; }
+};
+
+load().catch(e => $('#summary').textContent = e.message);
+setInterval(() => { if (!document.hidden && !document.querySelector('dialog[open]')) load().catch(() => {}); }, 30000);
+</script>
+</body>
+</html>
